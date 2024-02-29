@@ -1,4 +1,4 @@
-//Prueba dev nodemon console.log ("holis");
+//to do: try-catch, validaciones
 
 //importo dependencias
 const express = require ('express');
@@ -12,6 +12,8 @@ const api= express();
 //configuro server 
 api.use (cors()); //para que acepte las peticiones
 api.use (express.json()); // para que use el formato json
+api.set('view engine', 'ejs');
+
 
 //configuro el puerto 
 const port = process.env.PORT || 4001;
@@ -39,11 +41,11 @@ api.get('/dresses', async (req, res) => {
   
     const dressesSQL = 'select * from wedding_dresses';
     const [result] = await conex.query(dressesSQL);
-  
-    res.json({
-      info: { found: result.length }, 
-      results: result, 
-    });
+    res.render('landing', { dressesList: result });
+    // res.json({
+    //   info: { found: result.length }, 
+    //   results: result, 
+    // });
   });
 
   //endpoint filterId
@@ -84,7 +86,70 @@ api.get('/dresses', async (req, res) => {
   //endpoint filterStyle
 
   //endpoint post
+
+  api.post('/dresses', async (req,res) => {
+    const data=req.body;
+    const {nameDress, style, designer, yearCollection, fabric, color, image, size} = data;
+    const conex = await connect_db();
+    const dressesSQL= 'insert into wedding_dresses (nameDress, style, designer, yearCollection, fabric, color, image, size) values (?,?,?,?,?,?,?,?)';
+    const [result] = await conex.query (dressesSQL, [
+        nameDress,
+        style,
+        designer,
+        yearCollection,
+        fabric,
+        color,
+        image,
+        size,
+    ]);
+    res.json ({
+        id: result.insertId,
+    });
+  })
+  
   //endpoint put
+
+  api.put ('/dresses/:id', async (req,res) => {
+    const conex = await connect_db();
+    const idDress= req.params.id;
+    const data=req.body;
+    const {nameDress, style, designer, yearCollection, fabric, color, image, size} = data;
+    const dressesSQL= 'update wedding_dresses set nameDress=?, style=?, designer=?, yearCollection=?, fabric=?, color=?, image=?, size=? where idDress=?';
+    const [result] = await conex.query (dressesSQL, [
+        nameDress,
+        style,
+        designer,
+        yearCollection,
+        fabric,
+        color,
+        image,
+        size,
+        idDress,
+    ]);
+    res.json ({
+        success: true,
+        message: 'actualizado correctamente'
+    })
+  })
+
   //enpoint delete
+  api.delete ('/dresses', async (req, res) => {
+    const conex= await connect_db();
+    const idDress=req.query.id;
+    const dressesSQL= 'delete from wedding_dresses where idDress=?';
+    const [result] = await conex.query(dressesSQL, [idDress]);
+    console.log (result);
+    if (result.affectedRows > 0) {
+        res.json({
+          succes: true,
+          message: 'eliminado correctamente',
+        });
+      } else {
+        res.json({
+          succes: false,
+          message: 'NO se ha eliminado nada',
+        });
+      }
+  })
 
   
