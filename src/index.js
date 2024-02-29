@@ -33,16 +33,58 @@ async function connect_db () {
 }
 
 
-
-api.get('/wedding_dresses', async (req, res) => {
+//endpoint ListAll
+api.get('/dresses', async (req, res) => {
     const conex = await connect_db();
   
-    const weddingDressesSQL = 'select *from wedding_dresses';
-    const [result] = await conex.query(weddingDressesSQL);
-    
+    const dressesSQL = 'select * from wedding_dresses';
+    const [result] = await conex.query(dressesSQL);
   
     res.json({
-      info: { found: result.length }, // número de elementos
-      results: result, // listado
+      info: { found: result.length }, 
+      results: result, 
     });
   });
+
+  //endpoint filterId
+  api.get('/dresses/:id', async (req, res) => {
+    
+    const idDresses= req.params.id;
+    const conex = await connect_db();
+    const dressesSQL = 'select * from wedding_dresses where idDress=?';
+    const [result] = await conex.query(dressesSQL ,[idDresses]);
+    res.json({
+      results: result, 
+    });
+  });
+
+  //endpoint filterName
+  api.get('/name', async (req, res) => {
+    const conex = await connect_db();
+    const dressesSQL = 'select * from wedding_dresses where nameDress= ?';
+    const [result] = await conex.query(dressesSQL ,[req.query.name]);
+    console.log (req.query.name)
+    res.json({
+      results: result, 
+    });
+  });
+
+
+  //endpoint filterfabric
+  api.get('/fabric', async (req, res) => {
+    const conex = await connect_db();
+    const dressesSQL = 'select * from wedding_dresses where fabric= ?';
+    const [result] = await conex.query(dressesSQL ,[req.query.fabric]);
+    console.log (req.query.fabric)
+    res.json({
+      results: result, 
+    });
+  });
+
+  //endpoint filterStyle
+
+  //endpoint post
+  //endpoint put
+  //enpoint delete
+
+  
