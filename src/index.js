@@ -32,7 +32,7 @@ async function connect_db () {
         database: 'bridal_db',
     });    
     conex.connect ();
-    console.log ('Successfully connected')
+    console.log ('Successfully connected') 
     return conex;
 }
 
