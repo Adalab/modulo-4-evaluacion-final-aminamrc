@@ -5,6 +5,8 @@ const express = require ('express');
 const cors = require ('cors');
 const mysql = require ('mysql2/promise');
 require ('dotenv').config();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 //creo server
 const api= express();
@@ -34,6 +36,13 @@ async function connect_db () {
     return conex;
 }
 
+//generate token
+
+const generateToken = (data) => {
+  const token = jwt.sign(data, 'secret', { expiresIn: '1h' });
+  console.log(token);
+  return token;
+};
 
 //endpoint ListAll
 api.get('/dresses', async (req, res) => {
@@ -152,4 +161,34 @@ api.get('/dresses', async (req, res) => {
       }
   })
 
+  //endpoint signup
+  api.post('/signup', async (req,res) => {
+    const {username, email,password,address} = req.body;
+    console.log(req.body)
+    const conex = await connect_db();
+    const selectedUser= 'select * from users where username=? or email=?';
+    console.log (selectedUser)
+    const [result] = await conex.query (selectedUser, [
+      username,
+      email,
+      password,
+      address  
+    ]);
+    console.log(result)
+    if (result.length === 0) {
+      const passwordHashed= await bcrypt.hash(password, 10);
+      console.log(passwordHashed)
+      const insertUser= 'insert into users (username, email, hashed_password,address) values (?,?,?,?)';
+      const [resultInsert] =await conex.query(insertUser, [
+        username,
+        email,
+        passwordHashed,
+        address,
+      ]);
+      console.log(resultInsert)
+      res.json({success:true, data: resultInsert,idUser: result.insertId}); //response token?
+    }
+  });
+
+  //endpoint login
   
