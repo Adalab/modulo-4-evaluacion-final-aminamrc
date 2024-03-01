@@ -45,7 +45,7 @@ const generateToken = (data) => {
 };
 
 //endpoint ListAll
-api.get('/dresses', async (req, res) => {
+api.get('/', async (req, res) => {
     const conex = await connect_db();
   
     const dressesSQL = 'select * from wedding_dresses';
