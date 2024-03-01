@@ -64,9 +64,10 @@ api.get('/dresses', async (req, res) => {
     const conex = await connect_db();
     const dressesSQL = 'select * from wedding_dresses where idDress=?';
     const [result] = await conex.query(dressesSQL ,[idDresses]);
-    res.json({
-      results: result, 
-    });
+    res.render('details', { dressesList: result });
+    // res.json({
+    //   results: result, 
+    // });
   });
 
   //endpoint filterName
@@ -75,9 +76,7 @@ api.get('/dresses', async (req, res) => {
     const dressesSQL = 'select * from wedding_dresses where nameDress= ?';
     const [result] = await conex.query(dressesSQL ,[req.query.name]);
     console.log (req.query.name)
-    res.json({
-      results: result, 
-    });
+    res.render('details', { dressesList: result });
   });
 
 
@@ -87,9 +86,7 @@ api.get('/dresses', async (req, res) => {
     const dressesSQL = 'select * from wedding_dresses where fabric= ?';
     const [result] = await conex.query(dressesSQL ,[req.query.fabric]);
     console.log (req.query.fabric)
-    res.json({
-      results: result, 
-    });
+    res.render('details', { dressesList: result });
   });
 
   //endpoint filterStyle
@@ -179,6 +176,7 @@ api.get('/dresses', async (req, res) => {
       const passwordHashed= await bcrypt.hash(password, 10);
       console.log(passwordHashed)
       const insertUser= 'insert into users (username, email, hashed_password,address) values (?,?,?,?)';
+
       const [resultInsert] =await conex.query(insertUser, [
         username,
         email,
@@ -191,4 +189,38 @@ api.get('/dresses', async (req, res) => {
   });
 
   //endpoint login
-  
+  api.post('/login', async (req,res) => {
+    const {email, password} = req.body;
+    const conex= await connect_db();
+    const selectedUser= 'select * from users where email=?'
+    const [result] = await conex.query(selectedUser, [email]);
+    if (result.length !==0) {
+      console.log("email recognized");
+      const checkPassword= await bcrypt.compare (password, result[0].hashed_password);
+      console.log(checkPassword);
+      if (checkPassword) {
+        
+        const infotoken= {
+          id: result[0].idUser,
+          email: result[0].email
+        } 
+        const token= generateToken(infotoken);
+        res.json ({
+          success: true,
+          token: token
+        })
+      } else {
+        res.json ({
+          success: false,
+          msg: 'password incorrect'
+        });
+      
+    } 
+  }else {
+    res.json({
+      success: false,
+      msg: 'this email does not exist'})
+    }})
+
+    const pathServerPublicStyles = './src/public-css';
+    api.use(express.static(pathServerPublicStyles));
